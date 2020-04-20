@@ -6,20 +6,20 @@ tags: grpc protobuf
 
 I have used and been very happy with [gRPC](https://grpc.io) as an inter-service communication mechanism 
 on multiple projects, however it took a few attempts to land on a protobuf rendering strategy that works well
-for my typical use-case: Numerous Go clients/services and TypeScript [gRPC-Web](https://github.com/grpc/grpc-web)
+for my typical use-case: numerous Go clients/services and TypeScript [gRPC-Web](https://github.com/grpc/grpc-web)
 clients being implemented by multiple developers.  In this post I'll explain what has worked well.
 
-**tl;dr**: Checkout the example repo at 
+**tl;dr**: Check out the example repo at 
 [https://github.com/caseylucas/protobuf](https://github.com/caseylucas/protobuf).
 
 ## Requirements
 
-There were a few requirements:
+There were a few requirements that evolved after having used gRPC in multiple projects:
 
 1. **Simplify and standardize running protoc for numerous services.**
 Sometimes it can feel like black magic getting protoc and it's command line options working - especially if 
 multiple directories and languages are used. We want to get this right once and in one place and if we 
-need to make changes to an option, do it in one place.
+need to make changes options, do it in one place.
 
 2. **Evolve protobuf definitions so that server implementations and client consumption can advance independently.**
 The ability to evolve service definitions and implementations in a wire-compatible way is an inherent feature of gRPC
@@ -69,7 +69,7 @@ of service definition related commits which helps with requirement 4.
 
 2. **Use [Uber's prototool](https://github.com/uber/prototool) and run it via docker for consistent,
 repeatable renderings.**
-Prototool is a great tool for rendering protobuf files. You can have it enforce conventions and it
+Prototool is a great tool for rendering protobuf files. You can have it enforce conventions (lint) and it
 supports rendering multiple languages. Of course, using docker removes potential environment
 inconsistency issues. Overall, using prototool helps with requirements 1, 3 and 5.
 
@@ -107,19 +107,24 @@ Once set up, adding new services, editing existing ones and using the rendered c
 service definition.  You may need to modify `prototool.yaml` depending on the complexity of modifications.  You
 can also run `make diff` if you really want to inspect the differences in rendered code.
 
-2. Add a new definition for the rendered code repository in `rendered_repos.mk`.
+2. Add a new definition for the rendered code repository to the `REPOS` variable in `rendered_repos.mk`.  See
+[rendered_repos.mk](https://github.com/caseylucas/protobuf/blob/master/rendered_repos.mk#L3-L7) for examples.
 
-3. Create new GitHub repositories. New repositories will only be created if they don't already exist.
+3. Create new GitHub repositories (if they don't exist).
     ```bash
     make repos
     ```
+This target wasn't strictly necessary but it conveniently creates new repositories and initializes Go module
+support for rendered Go code.
 
-4. Commit the rendered code to the language-specific repositories.
+4. Commit the rendered code to the language-specific repositories.  If `rendered_repos.mk` lists multiple languages
+then they will all be committed.
     ```bash
     make commit 
     ```
 
-5. Commit the modified protobuf files.
+5. Commit the modified protobuf files.  The commit make target doesn't also commit the current repository holding
+protobuf files.  You'll need to do that with git.
     ```bash
     git commit
     ```
@@ -136,7 +141,8 @@ Making modifications to an existing service definition:
 
 ### Using the Rendered Code
 
-Using the rendered code is typical for both Go:
+Using the rendered code in other repositories holding the client and/or service implementations is typical 
+for both Go:
 ```bash
 go get -u github.com/caseylucas/protobuf-some_service-go
 ```
@@ -152,5 +158,5 @@ independently.
 ## Wrap-up
 
 I hope this helps someone that might be new to gRPC or otherwise struggling with getting protoc up and running.
-Any feedback is appreciated.
+Feedback is appreciated.
 
