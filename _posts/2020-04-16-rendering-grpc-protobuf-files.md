@@ -5,7 +5,7 @@ tags: grpc protobuf
 ---
 
 I have used and been very happy with [gRPC](https://grpc.io) as an inter-service communication mechanism 
-on multiple projects however it took a few attempts to land on a protobuf rendering strategy that works well
+on multiple projects, however it took a few attempts to land on a protobuf rendering strategy that works well
 for my typical use-case: Numerous Go clients/services and TypeScript [gRPC-Web](https://github.com/grpc/grpc-web)
 clients being implemented by multiple developers.  In this post I'll explain what has worked well.
 
@@ -17,9 +17,9 @@ clients being implemented by multiple developers.  In this post I'll explain wha
 There were a few requirements:
 
 1. **Simplify and standardize running protoc for numerous services.**
-Sometimes it can feel like black magic getting all the protoc and it's command line options working - especially if 
-multiple directories and languages are used. We wanted to get this right once and in one place and if we 
-need to make changes to an option, we want to do it in one place.
+Sometimes it can feel like black magic getting protoc and it's command line options working - especially if 
+multiple directories and languages are used. We want to get this right once and in one place and if we 
+need to make changes to an option, do it in one place.
 
 2. **Evolve protobuf definitions so that server implementations and client consumption can advance independently.**
 The ability to evolve service definitions and implementations in a wire-compatible way is an inherent feature of gRPC
@@ -43,7 +43,7 @@ some consistency among service definitions.
 
 6. **Package up rendered files so they can be easily used in both client and service implementations.**
 The main languages we use are Golang and TypeScript and the "packaging" requirements for both these languages
-are pretty minimal however we found that using the gRPC-Web renderings with TypeScript works
+are pretty minimal, however we found that using the gRPC-Web renderings with TypeScript works
 best if we don't directly include rendered files in a TypeScript client project. Instead, you can include
 them as a separate package.json dependency. Example issue:
 [Failed to compile. 'proto' is not defined (also 'COMPILED')](https://github.com/grpc/grpc-web/issues/447)
@@ -64,7 +64,7 @@ warrants another look now.
 1. **Use a single repository to hold all protobuf files related to a set/domain of services.**
 One repository helps with requirement 1 by centralizing the protoc settings and options. It also helps
 with requirement 3 by keeping referenced protobuf files near each other and allowing them to
-easily evolve together. Finally, we can setup a repository wide notification and be notified
+easily evolve together. Finally, we can set up a repository wide notification and be notified
 of service definition related commits which helps with requirement 4.
 
 2. **Use [Uber's prototool](https://github.com/uber/prototool) and run it via docker for consistent,
@@ -76,7 +76,7 @@ inconsistency issues. Overall, using prototool helps with requirements 1, 3 and 
 3. **Commit all rendered files for a particular service into their own language-specific repository.**
 When creating a separate repository for each language and service pair, it becomes easy to evolve dependent
 client and service implementations individually.  The clients and services simply use `yarn/npm` or `go get` to
-include specific versions (usually latest/master) rendered repositories. Using separate repositories for
+include specific versions (usually latest/master) of rendered repositories. Using separate repositories for
 rendered code helps with requirements 2 and 6.
 
 
@@ -99,11 +99,11 @@ You can see an example [Makefile](https://github.com/caseylucas/protobuf/tree/ma
 
 ## Use
 
-Once setup, adding new services, editing existing ones and using the rendered code is pretty straightforward.
+Once set up, adding new services, editing existing ones and using the rendered code is pretty straightforward.
 
 ### New Service
 
-1. Add new protobuf files for the new serivce - iteratively running `make generate` to work out the kinks in the
+1. Add new protobuf files for the new service - iteratively running `make generate` to work out the kinks in the
 service definition.  You may need to modify `prototool.yaml` depending on the complexity of modifications.  You
 can also run `make diff` if you really want to inspect the differences in rendered code.
 
